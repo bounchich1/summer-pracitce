@@ -1,3 +1,4 @@
+"""Программа для обработки изображений """
 from tkinter import *
 from tkinter import filedialog, simpledialog, messagebox
 
@@ -10,6 +11,7 @@ MAX_HEIGHT = 600
 
 
 def resize_image(image):
+    """Функция изменения масштаба изображения для корректного отображения в рамках окна программы """
     height, width = image.shape[:2]
     if width > MAX_WIDTH or height > MAX_HEIGHT:
         if width / height > MAX_WIDTH / MAX_HEIGHT:
@@ -25,6 +27,7 @@ def resize_image(image):
 
 
 def upload_image():
+    """Функция загрузки изображения"""
     global img, canvas_img, img_pil, img_tk, drawing, rect_start
     file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.png;*.jpg;*.jpeg")])
     if not file_path:
@@ -33,11 +36,11 @@ def upload_image():
     try:
         img = cv2.imdecode(np.fromfile(file_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
     except Exception as e:
-        messagebox.showerror("Error", f"Failed to load the image. Please select a valid image file. Error: {e}")
+        messagebox.showerror("Ошибка", f"Не удалось загрузить изображение. Пожалуйста, выберите правильный файл изображения. Ошибка: {e}")
         return
 
     if img is None:
-        messagebox.showerror("Error", "Failed to load the image. Please select a valid image file.")
+        messagebox.showerror("Ошибка", "Не удалось загрузить изображение. Пожалуйста, выберите правильный файл изображения.")
         return
 
     if len(img.shape) == 3 and img.shape[2] == 4:
@@ -59,6 +62,7 @@ def upload_image():
 
 
 def capture_image():
+    """Функция снимка изображения с веб-камеры"""
     global img, canvas_img, img_pil, img_tk, drawing, rect_start
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -89,6 +93,7 @@ def capture_image():
 
 
 def toggle_rectangle_drawing():
+    """Функция перегключения рисования прямоугольников"""
     global drawing_rectangles, img
     if img is None:
         messagebox.showerror("Ошибка", "Нет изображния для обработки.")
@@ -101,6 +106,7 @@ def toggle_rectangle_drawing():
 
 
 def draw_rectangle_with_mouse(event):
+    """Функция рисования прямоугольников мышкой"""
     global rect_start, rect_id
     if drawing_rectangles:
         if rect_start is None:
@@ -111,6 +117,7 @@ def draw_rectangle_with_mouse(event):
 
 
 def stop_draw_rectangle(event):
+    """Функция остановки рисования прямоугольников"""
     global rect_start, rect_id, img
     if drawing_rectangles and rect_start is not None:
         x1, y1 = rect_start
@@ -121,6 +128,7 @@ def stop_draw_rectangle(event):
 
 
 def sharpen_image():
+    """Функция увеличения резкости изображения"""
     if img is None:
         messagebox.showerror("Ошибка", "Нет изображния для обработки.")
         return
@@ -131,6 +139,7 @@ def sharpen_image():
 
 
 def select_red_intensity():
+    """Функция маски по интенсивности красного"""
     if img is None:
         messagebox.showerror("Ошибка", "Нет изображния для обработки.")
         return
@@ -149,6 +158,7 @@ def select_red_intensity():
 
 
 def update_canvas(image):
+    """Функция обновления холства"""
     global img, canvas_img, img_pil, img_tk
     img = image
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -160,6 +170,7 @@ def update_canvas(image):
 
 
 def save_image():
+    """Функция сохранения изображения"""
     if img is None:
         messagebox.showerror("Ошибка", "Нет изображения для сохранения.")
         return
@@ -176,6 +187,7 @@ def save_image():
 
 
 def show_channel(channel):
+    """Функция показа канала - красного зеленого или синего"""
     if img is None:
         messagebox.showerror("Ошибка", "Нет изображния для обработки.")
         return
