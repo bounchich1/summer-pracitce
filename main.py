@@ -28,7 +28,7 @@ def resize_image(image):
 
 def upload_image():
     """Функция загрузки изображения"""
-    global img, canvas_img, img_pil, img_tk, drawing, rect_start
+    global img, canvas_img, img_pil, img_tk, drawing, rect_start, original_image
     file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.png;*.jpg;*.jpeg")])
     if not file_path:
         return
@@ -36,18 +36,20 @@ def upload_image():
     try:
         img = cv2.imdecode(np.fromfile(file_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
     except Exception as e:
-        messagebox.showerror("Ошибка", f"Не удалось загрузить изображение. Пожалуйста, выберите правильный файл изображения. Ошибка: {e}")
+        messagebox.showerror("Ошибка",
+                             f"Не удалось загрузить изображение. Пожалуйста, выберите правильный файл изображения. Ошибка: {e}")
         return
 
     if img is None:
-        messagebox.showerror("Ошибка", "Не удалось загрузить изображение. Пожалуйста, выберите правильный файл изображения.")
+        messagebox.showerror("Ошибка",
+                             "Не удалось загрузить изображение. Пожалуйста, выберите правильный файл изображения.")
         return
 
     if len(img.shape) == 3 and img.shape[2] == 4:
-        # Convert the image from RGBA to RGB
         img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
 
     img = resize_image(img)
+    original_image = img.copy()
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img_pil = Image.fromarray(img_rgb)
     img_tk = ImageTk.PhotoImage(image=img_pil)
@@ -56,14 +58,13 @@ def upload_image():
     canvas.create_image(0, 0, anchor=NW, image=img_tk)
     canvas_img = img.copy()
 
-    # Reset drawing state
     drawing = False
     rect_start = None
 
 
 def capture_image():
     """Функция снимка изображения с веб-камеры"""
-    global img, canvas_img, img_pil, img_tk, drawing, rect_start
+    global img, canvas_img, img_pil, img_tk, drawing, rect_start, original_image
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         messagebox.showerror("Ошибка", "Не удалось получить доступ к веб-камере. "
@@ -78,6 +79,7 @@ def capture_image():
         return
 
     img = frame
+    original_image = img.copy()
     img = resize_image(img)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img_pil = Image.fromarray(img_rgb)
@@ -87,7 +89,6 @@ def capture_image():
     canvas.create_image(0, 0, anchor=NW, image=img_tk)
     canvas_img = img.copy()
 
-    # Reset drawing state
     drawing = False
     rect_start = None
 
@@ -187,6 +188,7 @@ def save_image():
 
 
 def show_channel(channel):
+
     """Функция показа канала - красного, зеленого или синего"""
     if img is None:
         messagebox.showerror("Ошибка", "Нет изображния для обработки.")
@@ -199,6 +201,16 @@ def show_channel(channel):
     channel_img = np.zeros_like(img)
     channel_img[:, :, channel] = img[:, :, channel]
     update_canvas(channel_img)
+
+
+def show_all_channels():
+    global original_image
+    """Функция показа всех каналов (RGB)"""
+    if original_image is None:
+        messagebox.showerror("Ошибка", "Нет изображния для обработки.")
+        return
+
+    update_canvas(original_image)
 
 
 root = Tk()
@@ -215,7 +227,7 @@ line_thickness = 1
 rect_start = None
 rect_id = None
 drawing_rectangles = False
-
+original_image = None
 canvas = Canvas(root, bg='#3c3c3c')  # Set canvas background color
 canvas.pack()
 
@@ -263,17 +275,20 @@ red_intensity_button = Button(button_frame, text="Выделить красну�
                               command=select_red_intensity, **button_style_1)
 red_intensity_button.grid(row=2, column=0, padx=5, pady=5)
 
+all_channels_button = Button(button_frame, text='Отменить изменения', command=show_all_channels, **button_style_1)
+all_channels_button.grid(row=2, column=1, padx=5, pady=5)
+
 red_channel_button = Button(button_frame, text="Показать красный канал",
                             command=lambda: show_channel(2), **button_style_1)
-red_channel_button.grid(row=2, column=1, padx=5, pady=5)
+red_channel_button.grid(row=3, column=1, padx=5, pady=5)
 
 green_channel_button = Button(button_frame, text="Показать зеленый канал",
                               command=lambda: show_channel(1), **button_style_1)
-green_channel_button.grid(row=3, column=1, padx=5, pady=5)
+green_channel_button.grid(row=4, column=1, padx=5, pady=5)
 
 blue_channel_button = Button(button_frame, text="Показать голубой канал",
                              command=lambda: show_channel(0), **button_style_1)
-blue_channel_button.grid(row=4, column=1, padx=5, pady=5)
+blue_channel_button.grid(row=5, column=1, padx=5, pady=5)
 
 save_button = Button(button_frame, text="Сохранить изображение", command=save_image, **button_style_2)
 save_button.grid(row=5, column=0, padx=10, pady=5)
