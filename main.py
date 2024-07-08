@@ -118,7 +118,7 @@ def draw_rectangle_with_mouse(event):
 
 
 def stop_draw_rectangle(event):
-    """Функция остановки рисования прямоугольников"""
+    """Функция остановки рисования одного прямоугольника и отображение изменений"""
     global rect_start, rect_id, img
     if drawing_rectangles and rect_start is not None:
         x1, y1 = rect_start
@@ -155,7 +155,7 @@ def select_red_intensity():
         result_img = cv2.bitwise_and(img, img, mask=mask)
         update_canvas(result_img)
     except Exception as e:
-        messagebox.showerror("Ошибка", f"Не удалось применить маску интенсивности:")
+        messagebox.showerror("Ошибка", f"Не удалось применить маску интенсивности: {e}")
 
 
 def update_canvas(image):
